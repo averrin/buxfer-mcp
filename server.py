@@ -362,4 +362,8 @@ if __name__ == "__main__":
     import sys
 
     transport = "sse" if "--sse" in sys.argv else "stdio"
-    mcp.run(transport=transport)
+    if transport == "sse":
+        port = int(os.environ.get("PORT", "8000"))
+        mcp.run(transport=transport, host="0.0.0.0", port=port)
+    else:
+        mcp.run(transport=transport)
