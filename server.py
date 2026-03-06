@@ -65,6 +65,24 @@ class BuxferClient:
             data = resp.json()
         return data.get("response", {})
 
+    async def _post_request(self, endpoint: str, data: dict | None = None) -> dict:
+        """Make an authenticated POST request, re-logging in on auth failure."""
+        client = await self._ensure_client()
+        token = await self._get_token()
+        all_data = {"token": token, **(data or {})}
+        resp = await client.post(f"{BASE_URL}/{endpoint}", data=all_data)
+        resp.raise_for_status()
+        result = resp.json()
+        # Re-login on token expiry
+        if result.get("response", {}).get("status", "").startswith("ERROR"):
+            self._token = None
+            token = await self._login()
+            all_data["token"] = token
+            resp = await client.post(f"{BASE_URL}/{endpoint}", data=all_data)
+            resp.raise_for_status()
+            result = resp.json()
+        return result.get("response", {})
+
     async def get_accounts(self) -> list[dict]:
         resp = await self._request("accounts")
         return resp.get("accounts", [])
@@ -130,6 +148,17 @@ class BuxferClient:
     async def get_tags(self) -> list[dict]:
         resp = await self._request("tags")
         return resp.get("tags", [])
+
+    async def edit_transaction(
+        self,
+        transaction_id: int,
+        tags: str | None = None,
+    ) -> dict:
+        """Edit a transaction. Currently supports updating tags."""
+        data: dict = {"id": str(transaction_id)}
+        if tags is not None:
+            data["tags"] = tags
+        return await self._post_request("transaction_edit", data)
 
 
 buxfer = BuxferClient()
@@ -205,6 +234,23 @@ async def get_budgets() -> list[dict]:
 async def get_tags() -> list[dict]:
     """List all transaction tags. Tags are used to categorize transactions (e.g., Food, Transport, Entertainment)."""
     return await buxfer.get_tags()
+
+
+@mcp.tool()
+async def edit_transaction(
+    transaction_id: int,
+    tags: str | None = None,
+) -> dict:
+    """Edit a transaction's tags.
+
+    Args:
+        transaction_id: The numeric ID of the transaction to edit
+        tags: Comma-separated list of tag names to assign (e.g. "Food, Groceries"). Pass an empty string to clear all tags.
+    """
+    if tags is None:
+        raise ValueError("Provide 'tags' to update (use empty string to clear tags)")
+    resp = await buxfer.edit_transaction(transaction_id=transaction_id, tags=tags)
+    return {"status": resp.get("status", "OK"), "transaction_id": transaction_id, "tags": tags}
 
 
 @mcp.tool()
