@@ -1,7 +1,10 @@
 import os
 import httpx
+from dotenv import load_dotenv
 from datetime import datetime, timedelta
 from mcp.server.fastmcp import FastMCP
+
+load_dotenv()
 
 # --- Configuration ---
 BUXFER_EMAIL = os.environ.get("BUXFER_EMAIL", "")
@@ -92,7 +95,7 @@ class BuxferClient:
         resp = await self._request("transactions", params)
         return {
             "transactions": resp.get("transactions", []),
-            "totalTransactions": resp.get("numTransactions", 0),
+            "totalTransactions": int(resp.get("numTransactions", 0)),
         }
 
     async def get_all_transactions(
@@ -310,4 +313,7 @@ async def financial_report(
 # --- Entrypoint ---
 
 if __name__ == "__main__":
-    mcp.run(transport="sse")
+    import sys
+
+    transport = "sse" if "--sse" in sys.argv else "stdio"
+    mcp.run(transport=transport)
