@@ -3,6 +3,7 @@ import httpx
 from dotenv import load_dotenv
 from datetime import datetime, timedelta
 from mcp.server.fastmcp import FastMCP
+from mcp.server.sse import TransportSecuritySettings
 
 load_dotenv()
 
@@ -11,7 +12,10 @@ BUXFER_EMAIL = os.environ.get("BUXFER_EMAIL", "")
 BUXFER_PASSWORD = os.environ.get("BUXFER_PASSWORD", "")
 BASE_URL = "https://www.buxfer.com/api"
 
-mcp = FastMCP("Buxfer")
+mcp = FastMCP(
+    "Buxfer",
+    transport_security=TransportSecuritySettings(enable_dns_rebinding_protection=False),
+)
 
 # --- Buxfer API Client ---
 
