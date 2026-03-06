@@ -360,10 +360,10 @@ async def financial_report(
 
 if __name__ == "__main__":
     import sys
+    import uvicorn
 
-    transport = "sse" if "--sse" in sys.argv else "stdio"
-    if transport == "sse":
+    if "--sse" in sys.argv:
         port = int(os.environ.get("PORT", "8000"))
-        mcp.run(transport=transport, host="0.0.0.0", port=port)
+        uvicorn.run(mcp.sse_app(), host="0.0.0.0", port=port)
     else:
-        mcp.run(transport=transport)
+        mcp.run(transport="stdio")
