@@ -1,11 +1,11 @@
 import os
 import httpx
-from dotenv import load_dotenv
 from datetime import datetime, timedelta
 from mcp.server.fastmcp import FastMCP
 from mcp.server.sse import TransportSecuritySettings
 
-load_dotenv()
+from config import load_config
+load_config()
 
 # --- Configuration ---
 BUXFER_EMAIL = os.environ.get("BUXFER_EMAIL", "")

@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__deploy-mcp__deploy_list_projects",
+      "mcp__deploy-mcp__deploy_get_project_status",
+      "mcp__deploy-mcp__deploy_deploy_project",
+      "Bash(printenv)",
+      "mcp__Desktop_Commander__start_search",
+      "mcp__Desktop_Commander__get_more_search_results",
+      "mcp__deploy-mcp__deploy_remove_project"
+    ]
+  }
+}
